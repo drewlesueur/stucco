@@ -55,10 +55,10 @@ type ScopedBlock struct {
 	LexicalParent *State
 }
 
-var globalState *State
+var GlobalState *State
 
 func init() {
-	globalState = New()
+	GlobalState = New()
 }
 
 
@@ -174,10 +174,10 @@ func (s *State) PopCodeStack() {
 }
 
 // func R(code ...any) *State {
-// 	return globalState.R(code...)
+// 	return GlobalState.R(code...)
 // }
 func E(codeStringsAndFuncs ...any) *State {
-	return globalState.E(codeStringsAndFuncs...)
+	return GlobalState.E(codeStringsAndFuncs...)
 }
 
 func (s *State) R(globalNumberNameMap map[string]int, code ...any) *State {
