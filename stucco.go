@@ -213,13 +213,19 @@ func (s *State) R(globalNumberNameMap map[string]int, code ...any) *State {
 			s.Push(v(s.Pop()))
 		case func(any):
 			v(s.Pop())
+		case func(string) string:
+			s.Push(v(toStringInternal(s.Pop())))
+		case func(string, string) string:
+			b := toStringInternal(s.Pop())
+			a := toStringInternal(s.Pop())
+			s.Push(v(a, b))
 		default:
 			s.Push(v)
 		}
 	}
 	return freshState
 }
-
+// TODO: consolidate this with R
 func ExecBlock(s *State, block []any) *State {
 	origState := s
 	for i := 0; i < len(block); i++ {
@@ -235,6 +241,12 @@ func ExecBlock(s *State, block []any) *State {
 			s.Push(v(s.Pop()))
 		case func(any):
 			v(s.Pop())
+		case func(string) string:
+			s.Push(v(toStringInternal(s.Pop())))
+		case func(string, string) string:
+			b := toStringInternal(s.Pop())
+			a := toStringInternal(s.Pop())
+			s.Push(v(a, b))
 		default:
 			s.Push(v)
 		}
