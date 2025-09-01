@@ -155,6 +155,18 @@ func ExampleE_loopWithGoFunc() {
 	// 9
 	// 10
 }
+func ExampleE_split() {
+	E(`
+	    "a b c d" " " split say
+	`)
+	// Output:
+    // [
+    //     "a",
+    //     "b",
+    //     "c",
+    //     "d"
+    // ]
+}
 
 /*
     (

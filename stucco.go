@@ -519,6 +519,13 @@ var builtins = map[string]func(*State) *State{
 	    s.Push(s)
 	    return s
 	},
+	"split": func(s *State) *State {
+	    v := s.Pop().(string)
+	    str := s.Pop().(string)
+	    theList := NewListFromStringSlice(strings.Split(str, v))
+	    s.Push(theList)
+	    return s
+	},
 }
 
 func GetGlobalNumber(s *State) *State {

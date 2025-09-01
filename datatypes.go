@@ -30,6 +30,14 @@ func NewListWithCapacity(size int) *List {
 	return &List{TheSlice: make([]any, 0, size)}
 }
 
+func NewListFromStringSlice(slice []string) *List {
+	newSlice := make([]any, len(slice))
+	for i, v := range slice {
+		newSlice[i] = v
+	}
+	return &List{TheSlice: newSlice}
+}
+
 // Push appends an element to the List.
 func (l *List) Push(item any) {
 	l.TheSlice = append(l.TheSlice, item)
