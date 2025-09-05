@@ -106,6 +106,8 @@ func New() *State {
         
         ( swap as ) .var as
         ( swap to ) .let as
+        
+        
     
         .globalCounter 0 var
         .if (
@@ -147,6 +149,11 @@ func New() *State {
             drop
             do
         ) var
+        
+        // .or (
+        //     swap
+        //
+        // )
         // .enclose (
         //     .theBlock as
         //     {
@@ -255,6 +262,51 @@ func ExecBlock(s *State, block []any) *State {
 		}
 	}
 	return s
+}
+
+func AddBuiltin(name string, f any) {
+	var normalized func(s *State) *State
+
+	switch v := f.(type) {
+	case func(s *State) *State:
+        normalized = v
+	case func():
+	    normalized = func(s *State) *State {
+			v()
+	        return s
+	    }
+	case func() any:
+	    normalized = func(s *State) *State {
+			s.Push(v())
+	        return s
+	    }
+	case func(any) any:
+	    normalized = func(s *State) *State {
+			s.Push(v(s.Pop()))
+	        return s
+	    }
+	case func(any):
+	    normalized = func(s *State) *State {
+			v(s.Pop())
+	        return s
+	    }
+	case func(string) string:
+	    normalized = func(s *State) *State {
+			s.Push(v(toStringInternal(s.Pop())))
+	        return s
+	    }
+	case func(string, string) string:
+	    normalized = func(s *State) *State {
+			b := toStringInternal(s.Pop())
+			a := toStringInternal(s.Pop())
+			s.Push(v(a, b))
+	        return s
+	    }
+	default:
+		panic("unexpected type")
+	}
+
+	Builtins[name] = normalized
 }
 
 func (s *State) E(codeStringsAndFuncs ...any) *State {
@@ -396,7 +448,7 @@ func Parse(tokens []any, globalNumberNameMap map[string]int) ([]any) {
 					    globalNumberNameMap[t] = v
 						code = append(code, v)
 					}
-				} else if f, ok := builtins[t]; ok {
+				} else if f, ok := Builtins[t]; ok {
 					code = append(code, f)
 				} else if t == "true" {
 					code = append(code, true)
@@ -438,7 +490,7 @@ func Parse(tokens []any, globalNumberNameMap map[string]int) ([]any) {
 	return code
 }
 
-var builtins = map[string]func(*State) *State{
+var Builtins = map[string]func(*State) *State{
 	"newScope": NewScope,
 	"downScope": DownScope,
 	"upScope": UpScope,
