@@ -454,7 +454,9 @@ func Parse(tokens []any, globalNumberNameMap map[string]int) ([]any) {
 					code = append(code, true)
 				} else if t == "false" {
 					code = append(code, false)
-				} else if t == "nil" {
+				} else if t == "newline" {
+					code = append(code, "\n")
+				} else if t == "null" {
 					code = append(code, nil)
 					// } else if i, err := strconv.Atoi(t); err == nil {
 					// 	code = append(code, i)
