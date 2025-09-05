@@ -168,6 +168,16 @@ func ExampleE_split() {
     // ]
 }
 
+func ExampleE_newline() {
+	E(`
+	    "a" newline ++ "b" ++
+	    say
+	`)
+	// Output:
+	// a
+	// b
+}
+
 /*
     (
         (
