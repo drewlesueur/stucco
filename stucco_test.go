@@ -177,6 +177,18 @@ func ExampleE_newline() {
 	// a
 	// b
 }
+func ExampleE_each() {
+	E(`
+	    [ .a .b .c ] (
+	        ": " swap ++ ++
+	        say
+	    ) each
+	`)
+	// Output:
+    // 1: a
+    // 2: b
+    // 3: c
+}
 
 /*
     (

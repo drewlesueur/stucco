@@ -36,6 +36,8 @@ type State struct {
 	Code          []any
 	IStack        []int
 	I             int
+	ControlType  string
+	ControlTypeStack []string
 	CallingParent *State
 	LexicalParent *State
 	AsyncParent   *State
@@ -78,7 +80,7 @@ func New() *State {
 	
 	s.Mu.Lock() // only unlocks during async actions
 	ret := s
-	// standard library
+	// standard library, stdlib
 	s.E(`
         (
             newScope
@@ -140,6 +142,26 @@ func New() *State {
             dropScope
         ) var
         
+        .each (
+            newScope
+            .block as
+            .theList as
+            
+            theList len
+            .max as
+            0 .i as
+            (
+                i 1 + .i to
+                i max <= guard
+                i theList i at block valOnly
+                downScope
+                do
+                upScope
+                repeat
+            ) do
+            dropScope
+        ) var
+        
         
         .and (
             swap
@@ -149,6 +171,8 @@ func New() *State {
             drop
             do
         ) var
+        
+        
         
         // .or (
         //     swap
@@ -580,6 +604,12 @@ var Builtins = map[string]func(*State) *State{
 	    s.Push(theList)
 	    return s
 	},
+	"trim": func(s *State) *State {
+	    str := s.Pop().(string)
+	    trimmed := strings.TrimSpace(str)
+	    s.Push(trimmed)
+	    return s
+	},
 }
 
 func GetGlobalNumber(s *State) *State {
@@ -809,6 +839,23 @@ func Do(s *State) *State {
 	case []any:
 		s.CodeStack = append(s.CodeStack, s.Code)
 		s.IStack = append(s.IStack, s.I)
+		s.ControlTypeStack = append(s.ControlTypeStack, s.ControlType)
+		s.ControlType = ""
+		s.Code = code
+		s.I = -1
+	default:
+        s.Push(code)
+    }
+	return s
+}
+
+func DoAs(s *State) *State {
+	switch code := s.Pop().(type) {
+	case []any:
+		s.CodeStack = append(s.CodeStack, s.Code)
+		s.IStack = append(s.IStack, s.I)
+		s.ControlTypeStack = append(s.ControlTypeStack, s.ControlType)
+		s.ControlType = ""
 		s.Code = code
 		s.I = -1
 	default:
