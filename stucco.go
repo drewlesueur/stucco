@@ -374,18 +374,20 @@ func Tokenize(codeString string) []any {
 	wordLoop:
 		for i := 0; i < len(words); i++ {
 			w := words[i]
+			trimmedW := strings.TrimSpace(w)
+
 			if parseState == "normal" {
-				if strings.HasPrefix(w, "//") {
+				if strings.HasPrefix(trimmedW, "//") {
 					break
 				}
-				if strings.HasPrefix(w, "#") {
+				if strings.HasPrefix(trimmedW, "#") {
 					break
 				}
-				if w == "string:" {
+				if trimmedW == "string:" {
 					tokens = append(tokens, "."+strings.Join(words[i+1:], " "))
 					break
 				}
-				if w == "beginString" {
+				if trimmedW == "beginString" {
 					indent := strings.Join(words[0:i], " ") + " "
 					startLineI := lineI
 					search := indent + "endString"
@@ -407,7 +409,7 @@ func Tokenize(codeString string) []any {
 					}
 					panic("no corresponding endString found")
 				}
-				if strings.HasPrefix(w, `"`) {
+				if strings.HasPrefix(trimmedW, `"`) {
 					parseState = "string"
 					stringStart = i
 					if len(w) != 1 {
@@ -415,7 +417,7 @@ func Tokenize(codeString string) []any {
 					}
 					continue
 				}
-				tokens = append(tokens, w)
+				tokens = append(tokens, trimmedW)
 			} else if parseState == "string" {
 				// if strings.HasSuffix(w, `"`)  && len(w) != 1 {
 				if strings.HasSuffix(w, `"`) {
