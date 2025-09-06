@@ -989,3 +989,20 @@ true (
 // // 	// Output:
 // // 	// 30
 // // }
+
+
+func ExampleE_tabs() {
+	E(`
+		"wow" say
+	`)
+	// Output:
+	// wow
+}
+
+func ExampleE_tabs1() {
+	E(`
+		.wow say
+	`)
+	// Output:
+	// wow
+}

@@ -25,6 +25,7 @@ import (
 	"unsafe"
 	"os"
 	"sync"
+	"unicode"
 )
 
 type State struct {
@@ -171,6 +172,10 @@ func New() *State {
             drop
             do
         ) var
+
+	.isnt (
+	    is not
+	) var
         
         
         
@@ -363,6 +368,10 @@ func interned(v string) string {
 	return v
 }
 
+func TrimSpaceLeft(s string) string {
+	return strings.TrimLeftFunc(s, unicode.IsSpace)
+}
+
 func Tokenize(codeString string) []any {
 	tokens := []any{}
 	lines := strings.Split(codeString, "\n")
@@ -426,6 +435,7 @@ func Tokenize(codeString string) []any {
 					// log.Println("#skyblue", stringStart, i+1)
 					theString := strings.Join(words[stringStart:i+1], " ")
 					// log.Println("#skyblue", theString)
+					theString = TrimSpaceLeft(theString)
 					tokens = append(tokens, "."+theString[1:len(theString)-1])
 					continue
 				}
@@ -611,6 +621,30 @@ var Builtins = map[string]func(*State) *State{
 	    trimmed := strings.TrimSpace(str)
 	    s.Push(trimmed)
 	    return s
+	},
+	"getEnv": func(s *State) *State {
+	    s.Push(os.Getenv(s.Pop().(string)))
+	    return s
+	},
+	"readFile": func(s *State) *State {
+	    filename := s.Pop().(string)
+	    s.Mu.Unlock()
+	    b, err := os.ReadFile(filename)
+	    s.Mu.Lock()
+
+	    if err != nil {
+		s.Vars.Set("lastErr", err.Error())
+		s.Push("")
+	    } else {
+		// TODO: consider making string/bytes interchangeable
+		s.Push(string(b))
+	    }
+	    return s
+	},
+	"not": func(s *State) *State {
+		v := s.Pop().(bool)
+		s.Push(!v)
+		return s
 	},
 }
 
