@@ -188,6 +188,10 @@ func (r *Record) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
+func (r *Record) Length() int {
+	return len(r.Keys)
+}
+
 // Set assigns value to key. If key is new, it appends it.
 func (r *Record) Set(key string, value any) {
 	if idx, ok := r.KeyToIndex[key]; ok {

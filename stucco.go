@@ -176,6 +176,12 @@ func New() *State {
 	.isnt (
 	    is not
 	) var
+
+	.startsWith (
+	    .prefix as 
+	    .str as
+	    str 1 prefix len slice prefix is
+	) var
         
         
         
@@ -654,10 +660,18 @@ func GetGlobalNumber(s *State) *State {
 }
 
 func Len(s *State) *State {
-	list := s.Pop().(*List)
-	s.Push(float64(list.Length()))
+	v := s.Pop()
+	switch v := v.(type) {
+	case string:
+		s.Push(float64(len(v)))
+	case *List:
+		s.Push(float64(v.Length()))
+	case *Record:
+		s.Push(float64(v.Length()))
+	}
 	return s
 }
+
 func NowMS(s *State) *State {
 	s.Push(float64(time.Now().UnixMilli()))
 	return s

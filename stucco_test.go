@@ -1006,3 +1006,14 @@ func ExampleE_tabs1() {
 	// Output:
 	// wow
 }
+
+
+func ExampleE_startsWith() {
+	E(`
+		"abcd" "abc" startsWith say
+		"abcd" "abd" startsWith say
+	`)
+	// Output:
+	// true
+	// false
+}
