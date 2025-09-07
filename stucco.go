@@ -18,35 +18,34 @@ package stucco
 import (
 	"fmt"
 	"log"
+	"math"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
-	"unsafe"
-	"os"
 	"sync"
+	"time"
 	"unicode"
-	"math"
+	"unsafe"
 )
 
 type State struct {
-	GlobalNumbers []float64
-	Vals          *List
-	VarsStack     []*Record
-	Vars          *Record
-	CodeStack     [][]any
-	Code          []any
-	IStack        []int
-	I             int
-	ControlType  string
+	GlobalNumbers    []float64
+	Vals             *List
+	VarsStack        []*Record
+	Vars             *Record
+	CodeStack        [][]any
+	Code             []any
+	IStack           []int
+	I                int
+	ControlType      string
 	ControlTypeStack []string
-	CallingParent *State
-	LexicalParent *State
-	AsyncParent   *State
-	Tag           string
-	Mu sync.Mutex
+	CallingParent    *State
+	LexicalParent    *State
+	AsyncParent      *State
+	Tag              string
+	Mu               sync.Mutex
 }
-
 
 type Callback struct {
 	State        *State
@@ -65,21 +64,17 @@ func init() {
 	GlobalState = New()
 }
 
-
-
-
 func New() *State {
 	_ = log.Println
 
 	s := &State{
-		Vals:        NewList(),
-		Vars:        NewRecord(),
-		Code:        nil,
-		I:           -1,
-		Mu: sync.Mutex{},
+		Vals: NewList(),
+		Vars: NewRecord(),
+		Code: nil,
+		I:    -1,
+		Mu:   sync.Mutex{},
 	}
-	
-	
+
 	s.Mu.Lock() // only unlocks during async actions
 	ret := s
 	// standard library, stdlib
@@ -230,24 +225,24 @@ func New() *State {
 	return ret
 }
 
-func (s *State) BeDone() * State {
+func (s *State) BeDone() *State {
 	if len(s.CodeStack) > 0 {
-	    s.PopCodeStack()
-	    return s
+		s.PopCodeStack()
+		return s
 	}
 	return s.CallingParent
 }
 func (s *State) PopCodeStack() {
-    s.Code = s.CodeStack[len(s.CodeStack)-1]
-    s.I = s.IStack[len(s.IStack)-1]
-    
-    s.CodeStack = s.CodeStack[0:len(s.CodeStack)-1]
-    s.IStack = s.IStack[0:len(s.IStack)-1]
+	s.Code = s.CodeStack[len(s.CodeStack)-1]
+	s.I = s.IStack[len(s.IStack)-1]
+
+	s.CodeStack = s.CodeStack[0 : len(s.CodeStack)-1]
+	s.IStack = s.IStack[0 : len(s.IStack)-1]
 }
 
-// func R(code ...any) *State {
-// 	return GlobalState.R(code...)
-// }
+//	func R(code ...any) *State {
+//		return GlobalState.R(code...)
+//	}
 func E(codeStringsAndFuncs ...any) *State {
 	return GlobalState.E(codeStringsAndFuncs...)
 }
@@ -260,7 +255,7 @@ func (s *State) R(globalNumberNameMap map[string]int, code ...any) *State {
 		Vars:          s.Vars, // since it's global, we reuse global vars
 		LexicalParent: s,
 		CallingParent: nil,
-		Mu: s.Mu,
+		Mu:            s.Mu,
 		GlobalNumbers: make([]float64, len(globalNumberNameMap)),
 	}
 	s = freshState
@@ -297,6 +292,7 @@ func (s *State) R(globalNumberNameMap map[string]int, code ...any) *State {
 	}
 	return freshState
 }
+
 // TODO: consolidate this with R
 func ExecBlock(s *State, block []any) *State {
 	origState := s
@@ -323,7 +319,7 @@ func ExecBlock(s *State, block []any) *State {
 			s.Push(v)
 		}
 		if s != origState {
-		    return s
+			return s
 		}
 	}
 	return s
@@ -334,39 +330,39 @@ func AddBuiltin(name string, f any) {
 
 	switch v := f.(type) {
 	case func(s *State) *State:
-        normalized = v
+		normalized = v
 	case func():
-	    normalized = func(s *State) *State {
+		normalized = func(s *State) *State {
 			v()
-	        return s
-	    }
+			return s
+		}
 	case func() any:
-	    normalized = func(s *State) *State {
+		normalized = func(s *State) *State {
 			s.Push(v())
-	        return s
-	    }
+			return s
+		}
 	case func(any) any:
-	    normalized = func(s *State) *State {
+		normalized = func(s *State) *State {
 			s.Push(v(s.Pop()))
-	        return s
-	    }
+			return s
+		}
 	case func(any):
-	    normalized = func(s *State) *State {
+		normalized = func(s *State) *State {
 			v(s.Pop())
-	        return s
-	    }
+			return s
+		}
 	case func(string) string:
-	    normalized = func(s *State) *State {
+		normalized = func(s *State) *State {
 			s.Push(v(toStringInternal(s.Pop())))
-	        return s
-	    }
+			return s
+		}
 	case func(string, string) string:
-	    normalized = func(s *State) *State {
+		normalized = func(s *State) *State {
 			b := toStringInternal(s.Pop())
 			a := toStringInternal(s.Pop())
 			s.Push(v(a, b))
-	        return s
-	    }
+			return s
+		}
 	default:
 		panic("unexpected type")
 	}
@@ -376,9 +372,9 @@ func AddBuiltin(name string, f any) {
 
 func (s *State) E(codeStringsAndFuncs ...any) *State {
 	globalNumberNameMap := map[string]int{}
-	
+
 	tokens := []any{}
-	
+
 	for _, cf := range codeStringsAndFuncs {
 		switch cf := cf.(type) {
 		case string:
@@ -391,7 +387,7 @@ func (s *State) E(codeStringsAndFuncs ...any) *State {
 	}
 	code := Parse(tokens, globalNumberNameMap)
 	return s.R(globalNumberNameMap, code...)
-	
+
 }
 
 var internedStrings = map[string]string{}
@@ -482,11 +478,14 @@ func Tokenize(codeString string) []any {
 	return tokens
 }
 
-func Parse(tokens []any, globalNumberNameMap map[string]int) ([]any) {
+func Parse(tokens []any, globalNumberNameMap map[string]int) []any {
 
 	codeStack := [][]any{}
 	code := []any{}
-    
+
+	// labelsStack := []map[string]any{}
+	// labels := map[string]int{}
+
 	for _, t := range tokens {
 		switch t := t.(type) {
 		case string:
@@ -516,8 +515,8 @@ func Parse(tokens []any, globalNumberNameMap map[string]int) ([]any) {
 					if v, ok := globalNumberNameMap[t]; ok {
 						code = append(code, v)
 					} else {
-					    v := len(globalNumberNameMap)
-					    globalNumberNameMap[t] = v
+						v := len(globalNumberNameMap)
+						globalNumberNameMap[t] = v
 						code = append(code, v)
 					}
 				} else if f, ok := Builtins[t]; ok {
@@ -535,15 +534,20 @@ func Parse(tokens []any, globalNumberNameMap map[string]int) ([]any) {
 				} else if t == "valOnly" {
 					code[len(code)-1] = Get // instead of A (access)
 				} else if t == "varName" {
-					code = code[0:len(code)-1]
+					code = code[0 : len(code)-1]
+					// } else if t == "label" {
+					//    labelName := code[len(code)-2]
+					//	code = code[0:len(code)-2]
+					//    labelValue = len(code) - 1  // need to - 1
+
 				} else if f, err := strconv.ParseFloat(t, 64); err == nil {
 					code = append(code, f)
 				} else {
-				    if v, ok := globalNumberNameMap["$" + t]; ok {
+					if v, ok := globalNumberNameMap["$"+t]; ok {
 						code = append(code, v, GetGlobalNumber)
-				    } else {
+					} else {
 						code = append(code, interned(t), A)
-				    }
+					}
 
 					// This is actually slightly slower?
 					// code = append(code, func(s *State) *State {
@@ -565,13 +569,13 @@ func Parse(tokens []any, globalNumberNameMap map[string]int) ([]any) {
 }
 
 var Builtins = map[string]func(*State) *State{
-	"newScope": NewScope,
+	"newScope":  NewScope,
 	"downScope": DownScope,
-	"upScope": UpScope,
+	"upScope":   UpScope,
 	"dropScope": DropScope,
 	"scopeLen": func(s *State) *State {
-	    s.Push(len(s.VarsStack))
-	    return s
+		s.Push(len(s.VarsStack))
+		return s
 	},
 	"as":       As,
 	"to":       To,
@@ -585,107 +589,107 @@ var Builtins = map[string]func(*State) *State{
 	"}":        EndRecord,
 	"sleepMs":  SleepMS,
 	"get":      Get,
-	"get$":      GetGlobalNumber,
-	"as$":      func(s *State) *State {
-	    s.GlobalNumbers[s.Pop().(int)] = s.Pop().(float64)
-	    return s
+	"get$":     GetGlobalNumber,
+	"as$": func(s *State) *State {
+		s.GlobalNumbers[s.Pop().(int)] = s.Pop().(float64)
+		return s
 	},
-	"enclose":  Enclose,
-	"call":     Call,
-	"do":       Do,
-	"drop":     Drop,
+	"enclose": Enclose,
+	"call":    Call,
+	"do":      Do,
+	"drop":    Drop,
 	// "swap":     Swap,
 	// "dup":     Dup,
-	"is":     Is,
+	"is": Is,
 	"loopGo": func(s *State) *State {
-	    origState := s
-	    block := s.Pop().([]any)
-	    times := int(s.Pop().(float64))
-	    for i := 0; i < times; i++ {
-	        // _ = block
-	        // _ = origState
-	        s.Push(float64(i))
-	        s = ExecBlock(s, block)
-	        if s != origState {
-	            return s
-	        }
-	    }
-	    return s
+		origState := s
+		block := s.Pop().([]any)
+		times := int(s.Pop().(float64))
+		for i := 0; i < times; i++ {
+			// _ = block
+			// _ = origState
+			s.Push(float64(i))
+			s = ExecBlock(s, block)
+			if s != origState {
+				return s
+			}
+		}
+		return s
 	},
-	"+":            Plus,
-	"-":            Minus,
-	"*":            Times,
-	"/":            Divide,
-	">":            GreaterThan,
-	"<":            LessThan,
-	">=":            GreaterThanOrEqualTo,
-	"<=":            LessThanOrEqualTo,
-	"==":            EqualTo,
-    "round": func(s *State) *State {
-        s.Push(math.Round(s.Pop().(float64)))
-        return s
-    },
+	"+":  Plus,
+	"-":  Minus,
+	"*":  Times,
+	"/":  Divide,
+	">":  GreaterThan,
+	"<":  LessThan,
+	">=": GreaterThanOrEqualTo,
+	"<=": LessThanOrEqualTo,
+	"==": EqualTo,
+	"round": func(s *State) *State {
+		s.Push(math.Round(s.Pop().(float64)))
+		return s
+	},
 	"say":          Say,
 	"log":          Log,
 	"addrOfString": AddrOfString,
 	"repeat":       Repeat,
-	"exit":       Exit,
-	"tag":        Tag,
-	"getTag":        GetTag,
+	"exit":         Exit,
+	"tag":          Tag,
+	"getTag":       GetTag,
 	"breakTag":     BreakTag,
-	"breakLevel":     BreakLevel,
+	"breakLevel":   BreakLevel,
 	"break":        Break,
 	"guard":        Guard,
 	"guardLte":     GuardLTE,
-	"return":        Return,
+	"return":       Return,
 	// "delay":        Delay,
-	"nowMs":        NowMS,
-	"now":          NowMS,
-	"++":           CC,
-	"push":         Push,
-	"pushTo":       PushTo,
+	"nowMs":  NowMS,
+	"now":    NowMS,
+	"++":     CC,
+	"push":   Push,
+	"pushTo": PushTo,
 	// "if":       If,
 	// "ifelse":       IfElse,
-	"len":       Len,
-	"__state":       func(s *State) *State {
-	    s.Push(s)
-	    return s
+	"len": Len,
+	"__state": func(s *State) *State {
+		s.Push(s)
+		return s
 	},
-	"__vals":       func(s *State) *State {
-	    s.Push(s.Vals)
-	    return s
+	"__vals": func(s *State) *State {
+		s.Push(s.Vals)
+		return s
 	},
 	"split": func(s *State) *State {
-	    v := s.Pop().(string)
-	    str := s.Pop().(string)
-	    theList := NewListFromStringSlice(strings.Split(str, v))
-	    s.Push(theList)
-	    return s
+		v := s.Pop().(string)
+		str := s.Pop().(string)
+		theList := NewListFromStringSlice(strings.Split(str, v))
+		s.Push(theList)
+		return s
 	},
 	"trim": func(s *State) *State {
-	    str := s.Pop().(string)
-	    trimmed := strings.TrimSpace(str)
-	    s.Push(trimmed)
-	    return s
+		str := s.Pop().(string)
+		trimmed := strings.TrimSpace(str)
+		s.Push(trimmed)
+		return s
 	},
 	"getEnv": func(s *State) *State {
-	    s.Push(os.Getenv(s.Pop().(string)))
-	    return s
+		s.Push(os.Getenv(s.Pop().(string)))
+		return s
 	},
 	"readFile": func(s *State) *State {
-	    filename := s.Pop().(string)
-	    s.Mu.Unlock()
-	    b, err := os.ReadFile(filename)
-	    s.Mu.Lock()
+		filename := s.Pop().(string)
+		s.Mu.Unlock()
+		b, err := os.ReadFile(filename)
+		s.Mu.Lock()
 
-	    if err != nil {
-		s.Vars.Set("lastErr", err.Error())
-		s.Push("")
-	    } else {
-		// TODO: consider making string/bytes interchangeable
-		s.Push(string(b))
-	    }
-	    return s
+		if err != nil {
+			s.Vars.Set("lastErr", err.Error())
+			s.Push("")
+		} else {
+			// TODO: consider making string/bytes interchangeable
+			s.Push(string(b))
+		}
+		return s
 	},
 	"not": func(s *State) *State {
 		v := s.Pop().(bool)
@@ -694,18 +698,18 @@ var Builtins = map[string]func(*State) *State{
 	},
 	"pick": func(s *State) *State {
 		index := int(s.Pop().(float64))
-        v := s.Vals.Get(-index)
-        for i := -index; i <= -2; i++ {
-            s.Vals.Set(i, s.Vals.Get(i+1))
-        }
-        s.Vals.Set(-1, v)
-        return s
+		v := s.Vals.Get(-index)
+		for i := -index; i <= -2; i++ {
+			s.Vals.Set(i, s.Vals.Get(i+1))
+		}
+		s.Vals.Set(-1, v)
+		return s
 	},
 }
 
 func GetGlobalNumber(s *State) *State {
-    s.Push(s.GlobalNumbers[s.Pop().(int)])
-    return s
+	s.Push(s.GlobalNumbers[s.Pop().(int)])
+	return s
 }
 
 func Len(s *State) *State {
@@ -755,55 +759,55 @@ func Tag(s *State) *State {
 	return s
 }
 func GetTag(s *State) *State {
-    s.Push(s.Tag)
-    return s
+	s.Push(s.Tag)
+	return s
 }
 
 func (s *State) ChildState(block any) *State {
-    switch block := block.(type) {
-    case *ScopedBlock:
-        return &State{
-		    Vals:          s.Vals,
-		    Vars:          nil,
-		    Code:          block.Code,
-		    CallingParent: s,
-		    LexicalParent: block.LexicalParent,
-		    I:             -1,
-            Mu: s.Mu,
-            GlobalNumbers: s.GlobalNumbers,
-        }
-    case []any:
-        panic("should not get here 1")
-	    s.CodeStack = append(s.CodeStack, s.Code)
-	    s.IStack = append(s.IStack, s.I)
-	    s.Code = block
-	    s.I = -1
-	    return s
-    }
-    return s
+	switch block := block.(type) {
+	case *ScopedBlock:
+		return &State{
+			Vals:          s.Vals,
+			Vars:          nil,
+			Code:          block.Code,
+			CallingParent: s,
+			LexicalParent: block.LexicalParent,
+			I:             -1,
+			Mu:            s.Mu,
+			GlobalNumbers: s.GlobalNumbers,
+		}
+	case []any:
+		panic("should not get here 1")
+		s.CodeStack = append(s.CodeStack, s.Code)
+		s.IStack = append(s.IStack, s.I)
+		s.Code = block
+		s.I = -1
+		return s
+	}
+	return s
 }
 func (s *State) AsyncChildState(block any) *State {
-    switch block := block.(type) {
-    case *ScopedBlock:
-        return &State{
-	        Vals:          NewList(),
-	        Vars:          nil,
-	        Code:          block.Code,
-	        CallingParent: nil,
-	        LexicalParent: block.LexicalParent,
-	        AsyncParent:   s,
-	        I:             -1,
-            Mu: s.Mu,
-            GlobalNumbers: s.GlobalNumbers,
-        }
-    case []any:
-        panic("should not get here 2")
-	    s.CodeStack = append(s.CodeStack, s.Code)
-	    s.IStack = append(s.IStack, s.I)
-	    s.Code = block
-	    return s
-    }
-    return s
+	switch block := block.(type) {
+	case *ScopedBlock:
+		return &State{
+			Vals:          NewList(),
+			Vars:          nil,
+			Code:          block.Code,
+			CallingParent: nil,
+			LexicalParent: block.LexicalParent,
+			AsyncParent:   s,
+			I:             -1,
+			Mu:            s.Mu,
+			GlobalNumbers: s.GlobalNumbers,
+		}
+	case []any:
+		panic("should not get here 2")
+		s.CodeStack = append(s.CodeStack, s.Code)
+		s.IStack = append(s.IStack, s.I)
+		s.Code = block
+		return s
+	}
+	return s
 }
 
 // func If(s *State) *State {
@@ -838,18 +842,17 @@ func (s *State) AsyncChildState(block any) *State {
 // 	return s
 // }
 
-
 func BreakLevel(s *State) *State {
 	level := int(s.Pop().(float64))
-    i := 0
-    for {
-        s.PopCodeStack()
-        i++
-        if i == level {
-            break
-        }
-    }
-    return s
+	i := 0
+	for {
+		s.PopCodeStack()
+		i++
+		if i == level {
+			break
+		}
+	}
+	return s
 }
 
 func BreakTag(s *State) *State {
@@ -871,8 +874,8 @@ func Break(s *State) *State {
 func Guard(s *State) *State {
 	cond := s.Pop().(bool)
 	if !cond {
-	    // return s.BeDone()
-	    s.I = len(s.Code)
+		// return s.BeDone()
+		s.I = len(s.Code)
 	}
 	return s
 }
@@ -880,28 +883,28 @@ func GuardLTE(s *State) *State {
 	b := s.Pop().(float64)
 	a := s.Pop().(float64)
 	if a > b {
-	    s.I = len(s.Code)
+		s.I = len(s.Code)
 	}
 	return s
 }
 func Return(s *State) *State {
-    s.I = len(s.Code)-1
-    return s
-    // return s.CallingParent
+	s.I = len(s.Code) - 1
+	return s
+	// return s.CallingParent
 }
 func Repeat(s *State) *State {
 	s.I = -1
 	return s
 }
 func Exit(s *State) *State {
-    os.Exit(0)
-    return s
+	os.Exit(0)
+	return s
 }
-
 
 type Waiter struct {
-    State *State
+	State *State
 }
+
 // func Delay(s *State) *State {
 //     block := s.Pop()
 //     ms := int(s.Pop().(float64))
@@ -918,7 +921,6 @@ type Waiter struct {
 //     }()
 //     return s
 // }
-
 
 func AddrOfString(s *State) *State {
 	v := s.Pop().(string)
@@ -956,7 +958,7 @@ func Enclose(state *State) *State {
 }
 
 func C(code ...any) []any {
-    return code
+	return code
 }
 
 func Call(s *State) *State {
@@ -973,8 +975,8 @@ func Do(s *State) *State {
 		s.Code = code
 		s.I = -1
 	default:
-        s.Push(code)
-    }
+		s.Push(code)
+	}
 	return s
 }
 
@@ -988,8 +990,8 @@ func DoAs(s *State) *State {
 		s.Code = code
 		s.I = -1
 	default:
-        s.Push(code)
-    }
+		s.Push(code)
+	}
 	return s
 }
 
@@ -1010,7 +1012,7 @@ func UpScope(s *State) *State {
 }
 func DropScope(s *State) *State {
 	s.Vars = s.VarsStack[len(s.VarsStack)-2]
-	s.VarsStack = s.VarsStack[0:len(s.VarsStack)-2]
+	s.VarsStack = s.VarsStack[0 : len(s.VarsStack)-2]
 	return s
 }
 
@@ -1020,16 +1022,16 @@ func Drop(s *State) *State {
 }
 
 func Push(s *State) *State {
-    v := s.Pop()
-    l := s.Pop().(*List)
-    l.Push(v)
-    return s
+	v := s.Pop()
+	l := s.Pop().(*List)
+	l.Push(v)
+	return s
 }
 func PushTo(s *State) *State {
-    l := s.Pop().(*List)
-    v := s.Pop()
-    l.Push(v)
-    return s
+	l := s.Pop().(*List)
+	v := s.Pop()
+	l.Push(v)
+	return s
 }
 
 func (s *State) Push(v any) {
@@ -1078,7 +1080,6 @@ func (state *State) findParentAndValue(varName string) (*State, any) {
 	return nil, nil
 }
 
-
 func To(s *State) *State {
 	varName := s.Pop().(string)
 	v := s.Pop()
@@ -1104,7 +1105,7 @@ func As(s *State) *State {
 func (state *State) Var(varNameAny any, v any) {
 	varName := varNameAny.(string)
 	if state.Vars == nil {
-	    state.Vars = NewRecord()
+		state.Vars = NewRecord()
 	}
 	state.Vars.Set(varName, v)
 }
@@ -1272,7 +1273,6 @@ func EqualTo(s *State) *State {
 	return s
 }
 
-
 func Say(s *State) *State {
 	v := s.Pop()
 	fmt.Printf("%s\n", toStringInternal(v))
@@ -1292,8 +1292,8 @@ func BeginList(s *State) *State {
 		CallingParent: s,
 		LexicalParent: s,
 		I:             s.I,
- 		Mu: s.Mu,
-        GlobalNumbers: s.GlobalNumbers,
+		Mu:            s.Mu,
+		GlobalNumbers: s.GlobalNumbers,
 	}
 	return newState
 }
@@ -1311,8 +1311,8 @@ func BeginRecord(s *State) *State {
 		CallingParent: s,
 		LexicalParent: s,
 		I:             s.I,
-		Mu: s.Mu,
-        GlobalNumbers: s.GlobalNumbers,
+		Mu:            s.Mu,
+		GlobalNumbers: s.GlobalNumbers,
 	}
 	return newState
 }
@@ -1331,9 +1331,9 @@ func EndRecord(s *State) *State {
 
 func SleepMS(s *State) *State {
 	ms := int(s.Pop().(float64))
-    s.Mu.Unlock()
+	s.Mu.Unlock()
 	time.Sleep(time.Duration(ms) * time.Millisecond)
-    s.Mu.Lock()
+	s.Mu.Lock()
 	return s
 }
 
@@ -1352,13 +1352,12 @@ func SleepMS(s *State) *State {
 // waitn
 // cancel all
 
-
 /*
 .displayHistoryLite (
     .commandHistory as
     [ ] .ret as
     commandHistory (
-        
+
     ) each
 ) var
 

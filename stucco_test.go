@@ -144,7 +144,7 @@ func ExampleE_string() {
 }
 func ExampleE_loopWithGoFunc() {
 	E(`
-	    10 ( `, func(v any) {fmt.Println(v)} ,` ) loop
+	    10 ( `, func(v any) { fmt.Println(v) }, ` ) loop
 	`)
 	// Output:
 	// 1
@@ -163,12 +163,12 @@ func ExampleE_split() {
 	    "a b c d" " " split say
 	`)
 	// Output:
-    // [
-    //     "a",
-    //     "b",
-    //     "c",
-    //     "d"
-    // ]
+	// [
+	//     "a",
+	//     "b",
+	//     "c",
+	//     "d"
+	// ]
 }
 
 func ExampleE_newline() {
@@ -188,9 +188,9 @@ func ExampleE_each() {
 	    ) each
 	`)
 	// Output:
-    // 1: a
-    // 2: b
-    // 3: c
+	// 1: a
+	// 2: b
+	// 3: c
 }
 
 /*
@@ -264,7 +264,7 @@ true (
 // 	// Output:
 // 	// hello world
 // }
-// 
+//
 // func ExamplePlus() {
 // 	<-R(
 // 		1.0, 2.0, Plus, Say,
@@ -272,7 +272,7 @@ true (
 // 	// Output:
 // 	// 3
 // }
-// 
+//
 // func ExamplePlus_newline() {
 // 	<-R(
 // 		1.0, 2.0, Plus,
@@ -281,7 +281,7 @@ true (
 // 	// Output:
 // 	// 3
 // }
-// 
+//
 // func ExampleVar() {
 // 	<-R(
 // 		"name", "Drew", Var,
@@ -298,7 +298,7 @@ true (
 // 	// Output:
 // 	// Why Hello
 // }
-// 
+//
 // func ExampleB_closures() {
 // 	<-R(
 // 		"increr", B(
@@ -320,47 +320,47 @@ true (
 // 	// 2
 // 	// 3
 // }
-// 
+//
 // /*
-// 
+//
 // def a b c d (
-// 
+//
 // )
-// 
+//
 // indent for blocks
-// 
-// 
+//
+//
 // 12 loop i [ say i ]
-// 
-// 
-// 
+//
+//
+//
 // x (( 3 + 4 ))
-// 
-// 
-// 
-// 
+//
+//
+//
+//
 // 3 (
 //     "yay" say
 // ) loop
-// 
+//
 // .if (
 //     .block as
 //     .cond as
 //     cond guard
 //     block
 // ) def
-// 
+//
 // .if (
 //     swap
 //     guard
 //     call
 // ) def
-// 
+//
 // def if do
 //     swap guard call
 // end
-// 
-// 
+//
+//
 // def loop do
 //     as block
 //     as count
@@ -372,8 +372,8 @@ true (
 //         repeat
 //     end
 // end
-// 
-// 
+//
+//
 // .loop (
 //     .block as
 //     .count as
@@ -385,8 +385,8 @@ true (
 //         repeat
 //     ) run
 // ) def
-// 
-// 
+//
+//
 // .loop do
 //     .block as
 //     .count as
@@ -398,7 +398,7 @@ true (
 //         repeat
 //     end run
 // end def
-// 
+//
 // loop var do
 //     block var as
 //     count var as
@@ -410,8 +410,8 @@ true (
 //         repeat
 //     end run
 // end def
-// 
-// 
+//
+//
 // .loop
 //     .block as
 //     .count as
@@ -422,7 +422,7 @@ true (
 //         repeat
 //     run
 // def
-// 
+//
 // increr var do
 //     x var 0 def
 //     do
@@ -430,7 +430,7 @@ true (
 //         x
 //     end
 // end def
-// 
+//
 // increr var do
 //     x var 0 def
 //     do
@@ -438,8 +438,8 @@ true (
 //         x
 //     end
 // end def
-// 
-// 
+//
+//
 // increr do
 //     x 0 def
 //     do
@@ -447,11 +447,11 @@ true (
 //         x val
 //     end
 // end
-// 
+//
 // x 3 is do
 //     "x is 3" say
 // end if
-// 
+//
 // .incerer
 //     x 0 =
 //         x 1 + .x =
@@ -460,45 +460,45 @@ true (
 // .incr incerer =
 // incr say
 // incr say
-// 
-// 
+//
+//
 // .incerer
 //     x 0 =
 //         x 1 + .x =
 //         x
 // def
-// 
+//
 // .incerer ( .x 0 = ( x 1 + .x = x ) ) def
-// 
+//
 // incerer var ( x var 0 = ( x 1 + x var = x ) ) def
-// 
+//
 // def increr
 //     var x 0
 //     func
 //         let x x + 1
 //     end
 // end
-// 
-// 
+//
+//
 // switchNone
 //     case x is 3
-//     case 
+//     case
 // end
-// 
-// 
-// 
-// 
-// 
+//
+//
+//
+//
+//
 // incerer ( x 0 = ( x$ 1 + x = x$ ) ) def$
-// 
-// 
+//
+//
 // digits = theLines len  toString  len
-// 
+//
 // .loop do def
-// 
+//
 // end
-// 
-// 
+//
+//
 // def llmCall provider model prompt
 //     switch provider
 //     case "ollama"
@@ -512,49 +512,49 @@ true (
 //         exit
 //     end
 // end
-// 
-// 
+//
+//
 // def llmCall
-// 
-// 
+//
+//
 // end
-// 
-// 
+//
+//
 // llmCall var do
 //     provider do
 //         "ollama" do
-// 
+//
 //         case "chatgpt" do
-// 
+//
 //         end case
-// 
+//
 //     end switch
 // end def
-// 
-// 
-// 
+//
+//
+//
 // llmCall var do def
 //     provider do switch
 //         "ollama" do case
-// 
+//
 //         "chatgpt" do case
-// 
+//
 //         "anthropic" do case
 //         end
 //     end
 // end
-// 
-// 
-// 
+//
+//
+//
 // switch x
 //     case 100
-//     
+//
 //     case 200
-//     
+//
 //     case 300
-//     
+//
 // end
-// 
+//
 // def case val block
 //     var callingParent getCallingParent
 //     var cf callingParent lookup caseFunc
@@ -564,22 +564,22 @@ true (
 //         return
 //     end
 // end
-// 
-// 
-// 
-// 
+//
+//
+//
+//
 // 3 x is do if
 // end
-// 
-// 
+//
+//
 // if x is 3
-// 
+//
 // else if x is 4
-// 
+//
 // end
-// 
-// 
-// 
+//
+//
+//
 // switch var do
 //     block var as
 //     val var as
@@ -588,7 +588,7 @@ true (
 //     scope caseFunc var caseFunc setAt
 //     block
 // end def
-// 
+//
 // case var do
 //     block var as
 //     caseFunc do
@@ -596,22 +596,22 @@ true (
 //         block getFuncVal getLexParent getLexParent setState
 //     end if
 // end def
-// 
+//
 // l
 // lll
-// 
-// 
-// 
+//
+//
+//
 // def if cond block
 //     cond and
 // end
-// 
-// 
-// 
-// 
+//
+//
+//
+//
 // */
-// 
-// 
+//
+//
 // func ExampleA_closures2() {
 // 	<-R(
 // 		"increr", B(
@@ -633,7 +633,7 @@ true (
 // 	// 2
 // 	// 3
 // }
-// 
+//
 // func Increr(s *State) *State {
 // 	return B(
 // 		"x", 0.0, Var,
@@ -645,7 +645,7 @@ true (
 // 		),
 // 	)(s)
 // }
-// 
+//
 // func ExampleA_closures3() {
 // 	<-R(
 // 		"incr", Increr, Call, Var,
@@ -658,7 +658,7 @@ true (
 // 	// 2
 // 	// 3
 // }
-// 
+//
 // func ExampleA_closures4() {
 // 	<-E(`
 // 	    .increr (
@@ -679,7 +679,7 @@ true (
 // 	// 2
 // 	// 3
 // }
-// 
+//
 // func ExampleB_access() {
 // 	<-R(
 // 		"x", 300, Var,
@@ -707,7 +707,7 @@ true (
 // 	// 150
 // 	// 150
 // }
-// 
+//
 // func ExampleA_closures5() {
 // 	<-E(`
 // 	    .increr (
@@ -740,7 +740,7 @@ true (
 // 	//     "orange"
 // 	// ]
 // }
-// 
+//
 // func ExampleE_map() {
 // 	<-E(`
 // 	    { .fruit .apple .level 7 }
@@ -752,7 +752,7 @@ true (
 // 	//     "level": 7
 // 	// }
 // }
-// 
+//
 // func ExampleE_sleepMS() {
 // 	<-E(`
 // 	    .Howdy say
@@ -763,7 +763,7 @@ true (
 // 	// Howdy
 // 	// Duty
 // }
-// 
+//
 // func ExampleE_data() {
 // 	<-E(`
 // 	    [ .apple .pear .banana ] 1 at
@@ -783,25 +783,25 @@ true (
 // 	//     "pear"
 // 	// ]
 // }
-// 
+//
 // func ExampleE_data4() {
 // 	a := 100
 // 	<-E(func() {
 // 		a = 30
 // 	})
 // 	fmt.Println(a)
-// 
+//
 // 	// Output:
 // 	// 30
 // }
-// 
+//
 // func ExampleE_data5() {
 // 	v := <-E(`
 // 	    20
 // 	    25
 // 	`)
 // 	fmt.Println(v)
-// 
+//
 // 	// Output:
 // 	// 25
 // }
@@ -810,21 +810,21 @@ true (
 // 	    "hello world :)"
 // 	    say
 // 	`)
-// 
+//
 // 	// Output:
 // 	// hello world :)
 // }
-// 
+//
 // func ExampleE_stringLine() {
 // 	<-E(`
 //         string: all the way to the end :)
 //         say
 // 	`)
-// 
+//
 // 	// Output:
 // 	// all the way to the end :)
 // }
-// 
+//
 // func ExampleE_stringMultiLine() {
 // 	<-E(`
 //         beginString
@@ -834,7 +834,7 @@ true (
 //         endString
 //         say
 // 	`)
-// 
+//
 // 	// Output:
 // 	// This is
 // 	// a multiline
@@ -848,7 +848,7 @@ true (
 //             string
 //         endString say
 // 	`)
-// 
+//
 // 	// Output:
 // 	// This is
 // 	// a multiline
@@ -862,7 +862,7 @@ true (
 //             string
 //         endString 1 4 slice say
 // 	`)
-// 
+//
 // 	// Output:
 // 	// This
 // }
@@ -870,11 +870,11 @@ true (
 // 	<-E(`
 // 	    "oneWord" say
 // 	`)
-// 
+//
 // 	// Output:
 // 	// oneWord
 // }
-// 
+//
 // func ExampleE_loop() {
 // 	<-E(`
 // 	    5 (
@@ -882,7 +882,7 @@ true (
 // 	        "hello" say
 // 	    ) loop
 // 	`)
-// 
+//
 // 	// Output:
 // 	// 1
 // 	// hello
@@ -895,7 +895,7 @@ true (
 // 	// 5
 // 	// hello
 // }
-// 
+//
 // // runs faster when ran with
 // // go test -run TestLoop
 // func TestLoop(t *testing.T) {
@@ -910,13 +910,13 @@ true (
 // 	    a say
 // 	    a
 // 	`)).(float64)
-// 
+//
 // 	if a != 55 {
 // 		t.Fatalf("bad loop count: %v", a)
 // 	}
-// 
+//
 // }
-// 
+//
 // // func ExampleE_addrOf() {
 // // 	<-E(`
 // // 	    .yo addrOfString say
@@ -929,7 +929,7 @@ true (
 // //
 // // 	// Output:
 // // }
-// 
+//
 // // func ExampleE_data6() {
 // //     E(`
 // //         .events [ ] var
@@ -950,7 +950,7 @@ true (
 // // 	// Output:
 // // 	// 25
 // // }
-// 
+//
 // // func ExampleE_data5() {
 // //     events := []string{}
 // //
@@ -993,7 +993,6 @@ true (
 // // 	// 30
 // // }
 
-
 func ExampleE_tabs() {
 	E(`
     "wow" say
@@ -1009,7 +1008,6 @@ func ExampleE_tabs1() {
 	// Output:
 	// wow
 }
-
 
 func ExampleE_startsWith() {
 	E(`
@@ -1068,7 +1066,6 @@ func ExampleE_incr2() {
 	// 2
 }
 
-
 func ExampleE_ifElse() {
 	E(`
 
@@ -1079,9 +1076,8 @@ func ExampleE_ifElse() {
 	// Output:
 	// it's true
 	// it's false
-    // 0
+	// 0
 }
-
 
 func ExampleE_pick() {
 	E(`
@@ -1096,4 +1092,3 @@ func ExampleE_pick() {
 	// 3
 	// 2
 }
-

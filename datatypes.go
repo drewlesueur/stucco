@@ -3,10 +3,10 @@ package stucco
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"unsafe"
-	"reflect"
 	// "log"
 )
 
@@ -147,17 +147,18 @@ func (l *List) Slice(startInt, endInt int) *List {
 }
 
 type RecordCache struct {
-    Key string
-    Index int
-    Value any
+	Key   string
+	Index int
+	Value any
 }
 
 const cacheSize = 10
+
 type Record struct {
 	Values     []any
 	KeyToIndex map[string]int
 	Keys       []string
-	Cache []*RecordCache
+	Cache      []*RecordCache
 }
 
 // NewRecord returns a new empty Record.
@@ -166,7 +167,7 @@ func NewRecord() *Record {
 		Values:     make([]any, 0),
 		KeyToIndex: make(map[string]int),
 		Keys:       make([]string, 0),
-		Cache: make([]*RecordCache, cacheSize, cacheSize),
+		Cache:      make([]*RecordCache, cacheSize, cacheSize),
 	}
 }
 func (r *Record) UpdateCache(key string, idx int, v any) {
@@ -175,12 +176,12 @@ func (r *Record) UpdateCache(key string, idx int, v any) {
 	rCache := r.Cache[slot]
 	if rCache == nil {
 		rCache = &RecordCache{}
-	    r.Cache[slot] = rCache
+		r.Cache[slot] = rCache
 	}
 	rCache.Value = v
 	rCache.Key = key
 	rCache.Index = idx
-	
+
 }
 
 func (r *Record) MarshalJSON() ([]byte, error) {
@@ -204,7 +205,7 @@ func (r *Record) Set(key string, value any) {
 		r.Keys = append(r.Keys, key)
 		r.Values = append(r.Values, value)
 		r.KeyToIndex[key] = len(r.Values) - 1
-		r.UpdateCache(key, len(r.Values) - 1, value)
+		r.UpdateCache(key, len(r.Values)-1, value)
 	}
 }
 
@@ -212,17 +213,16 @@ func (r *Record) Set(key string, value any) {
 func (r *Record) Get(key string) any {
 	return nil
 	if r == nil {
-        return nil
+		return nil
 	}
-	
+
 	dataPtr := uintptr((*reflect.StringHeader)(unsafe.Pointer(&key)).Data)
 	slot := dataPtr % cacheSize
 	rCache := r.Cache[slot]
 	if rCache != nil && rCache.Key == key {
-	    return rCache.Value
+		return rCache.Value
 	}
-	
-	
+
 	if idx, ok := r.KeyToIndex[key]; ok {
 		return r.Values[idx]
 	}
@@ -230,9 +230,9 @@ func (r *Record) Get(key string) any {
 }
 func (r *Record) Has(key string) bool {
 	if r == nil {
-        return false
+		return false
 	}
-	
+
 	if _, ok := r.KeyToIndex[key]; ok {
 		return true
 	}
@@ -241,14 +241,14 @@ func (r *Record) Has(key string) bool {
 
 func (r *Record) GetHas(key string) (any, bool) {
 	if r == nil {
-        return nil, false
+		return nil, false
 	}
 
 	dataPtr := uintptr((*reflect.StringHeader)(unsafe.Pointer(&key)).Data)
 	slot := dataPtr % cacheSize
 	rCache := r.Cache[slot]
 	if rCache != nil && rCache.Key == key {
-	    return rCache.Value, true
+		return rCache.Value, true
 	}
 
 	idx, ok := r.KeyToIndex[key]
