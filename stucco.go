@@ -26,6 +26,7 @@ import (
 	"os"
 	"sync"
 	"unicode"
+	"math"
 )
 
 type State struct {
@@ -113,31 +114,45 @@ func New() *State {
         
     
         .globalCounter 0 var
+
         .if (
             swap
-            guard
+            (
+                guard
+                do
+                2 breakLevel
+            ) do
+            drop
+        ) var
+
+        .ifElse (
+            // cond ifCase elseCase
+            3 pick
+            // ifCase elseCase cond 
+            .outer tag
+            (
+                not guard
+                do
+                .outer breakTag
+            ) do
+
+            drop
             do
         ) var
-    
+
+
         .loop (
-            // globalCounter 1 + .globalCounter to
-            // "i_" globalCounter ++
             newScope
             .block as
             .max as
             0 .i as
-            // .name "who??" var
             (
                 i 1 + .i to
-                // "increasing i to " i ++ log
-                // "and max is " max ++ log
                 i max <= guard
-                // i max guardLte
                 i block valOnly
                 downScope
                 do
                 upScope
-                // "length of scope is " scopeLen ++ say
                 repeat
             ) do
             dropScope
@@ -168,9 +183,13 @@ func New() *State {
             swap
             do
             dup
-            guard
-            drop
-            do
+            (
+                guard
+                drop
+                do
+                2 breakLevel
+            ) do
+            swap drop
         ) var
 
 	.isnt (
@@ -178,10 +197,13 @@ func New() *State {
 	) var
 
 	.startsWith (
+	    newScope
 	    .prefix as 
 	    .str as
 	    str 1 prefix len slice prefix is
+	    dropScope
 	) var
+
         
         
         
@@ -591,13 +613,19 @@ var Builtins = map[string]func(*State) *State{
 	">=":            GreaterThanOrEqualTo,
 	"<=":            LessThanOrEqualTo,
 	"==":            EqualTo,
+    "round": func(s *State) *State {
+        s.Push(math.Round(s.Pop().(float64)))
+        return s
+    },
 	"say":          Say,
 	"log":          Log,
 	"addrOfString": AddrOfString,
 	"repeat":       Repeat,
 	"exit":       Exit,
 	"tag":        Tag,
+	"getTag":        GetTag,
 	"breakTag":     BreakTag,
+	"breakLevel":     BreakLevel,
 	"break":        Break,
 	"guard":        Guard,
 	"guardLte":     GuardLTE,
@@ -652,6 +680,17 @@ var Builtins = map[string]func(*State) *State{
 		s.Push(!v)
 		return s
 	},
+	"pick": func(s *State) *State {
+
+		index := int(s.Pop().(float64))
+        v := s.Vals.Get(-index)
+        for i := -index; i <= -2; i++ {
+            s.Vals.Set(i, s.Vals.Get(i+1))
+        }
+        s.Vals.Set(-1, v)
+        log.Println(s.Vals.TheSlice)
+        return s
+	},
 }
 
 func GetGlobalNumber(s *State) *State {
@@ -704,6 +743,10 @@ func Is(s *State) *State {
 func Tag(s *State) *State {
 	s.Tag = s.Pop().(string)
 	return s
+}
+func GetTag(s *State) *State {
+    s.Push(s.Tag)
+    return s
 }
 
 func (s *State) ChildState(block any) *State {
@@ -774,13 +817,39 @@ func (s *State) AsyncChildState(block any) *State {
 // 	return s
 // }
 
+// func BreakTag(s *State) *State {
+// 	tag := s.Pop().(string)
+// 	for s != nil {
+// 		if s.Tag == tag {
+// 			break
+// 		}
+// 		s = s.LexicalParent
+// 	}
+// 	return s
+// }
+
+
+func BreakLevel(s *State) *State {
+	level := int(s.Pop().(float64))
+    i := 0
+    for {
+        s.PopCodeStack()
+        i++
+        if i == level {
+            break
+        }
+    }
+    return s
+}
+
 func BreakTag(s *State) *State {
 	tag := s.Pop().(string)
+
 	for s != nil {
+		s.PopCodeStack()
 		if s.Tag == tag {
 			break
 		}
-		s = s.LexicalParent
 	}
 	return s
 }

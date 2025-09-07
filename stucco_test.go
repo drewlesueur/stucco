@@ -16,19 +16,19 @@ func ExampleE_say() {
 
 func ExampleE_block() {
 	E(`
-	    ( "hello world" say ) do
+	    ( "hello world 1" say ) do
 	`)
 	// Output:
-	// hello world
+	// hello world 1
 }
 
 func ExampleE_if() {
 	E(`
-	    true ( "hello world" say ) if
+	    true ( "hello world 2" say ) if
 	    false ( "goodbye world" say ) if
 	`)
 	// Output:
-	// hello world
+	// hello world 2
 }
 
 func ExampleE_varName() {
@@ -40,14 +40,15 @@ func ExampleE_varName() {
 }
 func ExampleE_valOnly() {
 	E(`
-	    .stuff ( "hello world" say ) var
+	    .stuff ( "hello world 3" say ) var
 	    stuff
-	    stuff valOnly
+	    stuff valOnly drop
 	    stuff
+
 	`)
 	// Output:
-	// hello world
-	// hello world
+	// hello world 3
+	// hello world 3
 }
 func ExampleE_state() {
 	E(`
@@ -110,19 +111,21 @@ func ExampleE_sleep() {
 	    nowMs
 	    150 sleepMs
 	    "slept" say
-	    nowMs - .diff as
-	    diff 
+	    nowMs swap - .diff as
+        diff 5 / round 5 * say
+        ` /*, func(s *State) *State {s.Push(s.Vals); return s},` say*/ + `
 	`)
 	// Output:
 	// slept
+	// 150
 }
 
 // TODO: nested Go funcs
 func ExampleE_and() {
 	// <-E(`
 	E(`
-	    1 1 is 2 and say
-	    1 1 is ( 3 ) and say
+	    true 2 and say
+	    true ( 3 ) and say
 	    false 100 and say
 	    false ( 300 ) and say
 	`)
@@ -993,7 +996,7 @@ true (
 
 func ExampleE_tabs() {
 	E(`
-		"wow" say
+    "wow" say
 	`)
 	// Output:
 	// wow
@@ -1001,7 +1004,7 @@ func ExampleE_tabs() {
 
 func ExampleE_tabs1() {
 	E(`
-		.wow say
+    .wow say
 	`)
 	// Output:
 	// wow
@@ -1010,10 +1013,85 @@ func ExampleE_tabs1() {
 
 func ExampleE_startsWith() {
 	E(`
-		"abcd" "abc" startsWith say
-		"abcd" "abd" startsWith say
+    "abcd" "abc" startsWith say
+    "abcd" "abd" startsWith say
 	`)
 	// Output:
 	// true
 	// false
 }
+
+func ExampleE_incr() {
+	E(`
+        .increr (
+            .x 0 var
+            (
+                x 1 + .x to
+                x
+            ) enclose
+        ) enclose var
+
+        increr .incr as
+        incr say
+        incr say
+        incr say
+        incr say
+	`)
+	// Output:
+	// 1
+	// 2
+	// 3
+	// 4
+}
+
+func ExampleE_incr2() {
+	E(`
+        .increr (
+            .x 0 var
+            (
+                x 1 + .x to
+                x
+            ) enclose
+        ) enclose var
+
+        increr .incrA as
+        increr .incrB as
+        incrA say
+        incrB say
+        incrA say
+        incrB say
+	`)
+	// Output:
+	// 1
+	// 1
+	// 2
+	// 2
+}
+
+
+// func ExampleE_ifElse() {
+// 	E(`
+// 
+//         true ( "it's true" say ) ( "it's false" say ) ifElse
+//         false ( "it's true" say ) ( "it's false" say ) ifElse
+// 	`)
+// 	// Output:
+// 	// it's true
+// 	// it's false
+// }
+
+
+func ExampleE_ifElse() {
+	E(`
+
+        1 2 3
+        3 pick
+        // 2 3 1
+        say say say
+	`)
+	// Output:
+	// 1
+	// 3
+	// 2
+}
+
