@@ -86,8 +86,11 @@ func (l *List) Get(index int) any {
 
 // SetAt sets the value at a 1-based index. Does nothing if out of range.
 func (l *List) Set(index int, value any) {
-	if index < 1 || index > len(l.TheSlice) {
+	if index > len(l.TheSlice) {
 		return
+	}
+	if index < 1 {
+		index = len(l.TheSlice) + index + 1
 	}
 	l.TheSlice[index-1] = value
 }

@@ -1069,19 +1069,21 @@ func ExampleE_incr2() {
 }
 
 
-// func ExampleE_ifElse() {
-// 	E(`
-// 
-//         true ( "it's true" say ) ( "it's false" say ) ifElse
-//         false ( "it's true" say ) ( "it's false" say ) ifElse
-// 	`)
-// 	// Output:
-// 	// it's true
-// 	// it's false
-// }
-
-
 func ExampleE_ifElse() {
+	E(`
+
+        true ( "it's true" say ) ( "it's false" say ) ifElse
+        false ( "it's true" say ) ( "it's false" say ) ifElse
+        __vals len say
+	`)
+	// Output:
+	// it's true
+	// it's false
+    // 0
+}
+
+
+func ExampleE_pick() {
 	E(`
 
         1 2 3

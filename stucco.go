@@ -125,15 +125,23 @@ func New() *State {
             drop
         ) var
 
+        // .if (
+        //     swap 
+        //     .else gotoIfNot
+        //     do
+        //     .done goto
+        //     .else label
+        //     drop
+        //     .done label
+        // )
+
         .ifElse (
-            // cond ifCase elseCase
             3 pick
-            // ifCase elseCase cond 
-            .outer tag
             (
                 not guard
                 do
-                .outer breakTag
+                drop
+                2 breakLevel
             ) do
 
             drop
@@ -177,8 +185,8 @@ func New() *State {
             ) do
             dropScope
         ) var
-        
-        
+
+
         .and (
             swap
             do
@@ -643,6 +651,10 @@ var Builtins = map[string]func(*State) *State{
 	    s.Push(s)
 	    return s
 	},
+	"__vals":       func(s *State) *State {
+	    s.Push(s.Vals)
+	    return s
+	},
 	"split": func(s *State) *State {
 	    v := s.Pop().(string)
 	    str := s.Pop().(string)
@@ -681,14 +693,12 @@ var Builtins = map[string]func(*State) *State{
 		return s
 	},
 	"pick": func(s *State) *State {
-
 		index := int(s.Pop().(float64))
         v := s.Vals.Get(-index)
         for i := -index; i <= -2; i++ {
             s.Vals.Set(i, s.Vals.Get(i+1))
         }
         s.Vals.Set(-1, v)
-        log.Println(s.Vals.TheSlice)
         return s
 	},
 }
