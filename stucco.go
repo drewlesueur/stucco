@@ -27,6 +27,7 @@ import (
 	"time"
 	"unicode"
 	"unsafe"
+	"path/filepath"
 )
 
 type State struct {
@@ -666,6 +667,16 @@ var Builtins = map[string]func(*State) *State{
 		s.Push(theList)
 		return s
 	},
+	"join": func(s *State) *State {
+		sep := s.Pop().(string)
+		theList := s.Pop().(*List)
+        stringList := make([]string, theList.Length())
+        for i, v := range theList.TheSlice {
+            stringList[i] = toStringInternal(v)
+        }
+        s.Push(strings.Join(stringList, sep))
+		return s
+	},
 	"trim": func(s *State) *State {
 		str := s.Pop().(string)
 		trimmed := strings.TrimSpace(str)
@@ -691,6 +702,22 @@ var Builtins = map[string]func(*State) *State{
 		}
 		return s
 	},
+    "writeFile": func(s *State) *State {
+        contents := s.Pop().(string)
+        fileName := s.Pop().(string)
+        s.Mu.Unlock()
+        err := os.MkdirAll(filepath.Dir(fileName), os.ModePerm)
+        // TODO: lastErr
+        if err != nil {
+            panic(err)
+        }
+        err = os.WriteFile(fileName, []byte(contents), 0644)
+        if err != nil {
+            panic(err)
+        }
+        s.Mu.Lock()
+        return s
+    },
 	"not": func(s *State) *State {
 		v := s.Pop().(bool)
 		s.Push(!v)
