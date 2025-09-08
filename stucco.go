@@ -996,6 +996,8 @@ func DoAs(s *State) *State {
 }
 
 // todo: you could always have the vars in the stack? might simplify
+//  TODO: when you do this, you can clear out anything left over
+// other alternative is compiled stack vars?
 func NewScope(s *State) *State {
 	s.VarsStack = append(s.VarsStack, s.Vars)
 	s.Vars = NewRecord()
